@@ -11,7 +11,8 @@ archivo = st.file_uploader("🗂️ Carga un archivo CSV o Excel", type=["csv", 
 # 📂 Lectura del Archivo
 if archivo is not None:
     if archivo.name.endswith('.csv'):
-        df = pd.read_csv(archivo, encoding='latin1')
+        df = pd.read_csv(archivo, encoding='latin1', sep=None, engine='python', on_bad_lines='skip')
+
     elif archivo.name.endswith('.xlsx'):
         df = pd.read_excel(archivo)
 
