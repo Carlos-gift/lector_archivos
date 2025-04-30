@@ -11,8 +11,7 @@ archivo = st.file_uploader("🗂️ Carga un archivo CSV o Excel", type=["csv", 
 # 📂 Lectura del Archivo
 if archivo is not None:
     if archivo.name.endswith('.csv'):
-        df = pd.read_csv(archivo, encoding='latin1', sep=None, engine='python', on_bad_lines='skip')
-
+         df = pd.read_csv(archivo, encoding='latin1', sep=None, engine='python', on_bad_lines='skip')
     elif archivo.name.endswith('.xlsx'):
         df = pd.read_excel(archivo)
 
@@ -37,6 +36,12 @@ if archivo is not None:
             "✅ ¿Qué quieres hacer con los datos agrupados?",
             ("Contar registros", "Sumar columna numérica")
         )
+
+        if len(seleccion_categorias) == 2:
+            filtro_categoria = st.selectbox("Selecciona la categoría para aplicar un filtro", seleccion_categorias)
+            categoria_filtrada = st.selectbox(f"Selecciona un valor de {filtro_categoria}", df[filtro_categoria].dropna().unique())
+            df = df[df[filtro_categoria] == categoria_filtrada]
+            seleccion_categorias = [c for c in seleccion_categorias if c != filtro_categoria]
 
         if seleccion_categorias:
             if operacion == "Sumar columna numérica" and columnas_numericas:
@@ -106,3 +111,4 @@ if archivo is not None:
                 plt.axis('equal')
                 plt.title("Agrupación de Datos - Torta")
                 st.pyplot(plt)
+
