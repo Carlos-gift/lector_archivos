@@ -112,3 +112,5 @@ if archivo is not None:
                 plt.title("Agrupación de Datos - Torta")
                 st.pyplot(plt)
 
+
+
