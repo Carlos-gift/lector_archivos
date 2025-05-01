@@ -19,8 +19,8 @@ if archivo is not None:
     st.subheader("🔢 Vista previa de los datos:")
     st.dataframe(df)
 
-    # 📜 Resumen General
-    st.subheader("📜 Resumen General:")
+    # 📃 Resumen General
+    st.subheader("📃 Resumen General:")
     st.write(f"Cantidad de registros: {df.shape[0]}")
     st.write(f"Cantidad de columnas: {df.shape[1]}")
     columnas_numericas = df.select_dtypes(include=['number']).columns.tolist()
@@ -52,22 +52,29 @@ if archivo is not None:
         st.markdown("**📊 Visualización adicional:**")
         if st.checkbox("📉 Mostrar Histograma"):
             plt.figure(figsize=(8, 5))
-            plt.hist(datos_columna, bins=10, color='skyblue', edgecolor='black')
-            plt.title(f"Histograma de {columna_analisis}")
-            plt.xlabel(columna_analisis)
+            frecuencias, bins, patches = plt.hist(datos_columna, bins=10, color='skyblue', edgecolor='black')
+            ordenado = sorted(zip(frecuencias, bins[:-1]), key=lambda x: x[0], reverse=True)
+            frecuencias_ordenadas, bins_ordenados = zip(*ordenado)
+            plt.clf()
+            plt.bar([f"{round(b, 1)}" for b in bins_ordenados], frecuencias_ordenadas, color='skyblue', edgecolor='black')
+            for i, valor in enumerate(frecuencias_ordenadas):
+                plt.text(i, valor + 0.5, f"{int(valor)}", ha='center', fontsize=8)
+            plt.title(f"Histograma de {columna_analisis} (ordenado)")
+            plt.xlabel("Rangos")
             plt.ylabel("Frecuencia")
+            plt.tight_layout()
             st.pyplot(plt)
 
-        if st.checkbox("📆 Mostrar Boxplot"):
+        if st.checkbox("📦 Mostrar Boxplot"):
             plt.figure(figsize=(6, 4))
             plt.boxplot(datos_columna, vert=False)
             plt.title(f"Boxplot de {columna_analisis}")
             plt.xlabel(columna_analisis)
             st.pyplot(plt)
 
-    # 🚰 Agrupación de datos
+    # 🛀 Agrupación de datos
     if columnas_categoricas:
-        st.subheader("🚰 Agrupar Datos:")
+        st.subheader("🛀 Agrupar Datos:")
         seleccion_categorias = st.multiselect("Selecciona las columnas para agrupar", columnas_categoricas)
 
         operacion = st.radio(
@@ -103,7 +110,6 @@ if archivo is not None:
                 mostrar_valores_barras = st.checkbox("Mostrar valores reales en Barras")
                 mostrar_porcentaje_barras = st.checkbox("Mostrar porcentaje en Barras")
 
-                # Ordenar categorías y valores de mayor a menor
                 ordenado = sorted(zip(categorias, valores), key=lambda x: x[1], reverse=True)
                 categorias_ordenadas, valores_ordenados = zip(*ordenado)
 
@@ -153,6 +159,5 @@ if archivo is not None:
                 plt.axis('equal')
                 plt.title("Agrupación de Datos - Torta")
                 st.pyplot(plt)
-
 
 
