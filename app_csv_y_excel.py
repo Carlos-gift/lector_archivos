@@ -11,7 +11,7 @@ archivo = st.file_uploader("🗂️ Carga un archivo CSV o Excel", type=["csv", 
 # 📂 Lectura del Archivo
 if archivo is not None:
     if archivo.name.endswith('.csv'):
-         df = pd.read_csv(archivo, encoding='latin1', sep=None, engine='python', on_bad_lines='skip')
+        df = pd.read_csv(archivo, encoding='latin1', sep=None, engine='python', on_bad_lines='skip')
     elif archivo.name.endswith('.xlsx'):
         df = pd.read_excel(archivo)
 
@@ -19,17 +19,55 @@ if archivo is not None:
     st.subheader("🔢 Vista previa de los datos:")
     st.dataframe(df)
 
-    # 📃 Resumen General
-    st.subheader("📃 Resumen General:")
+    # 📜 Resumen General
+    st.subheader("📜 Resumen General:")
     st.write(f"Cantidad de registros: {df.shape[0]}")
     st.write(f"Cantidad de columnas: {df.shape[1]}")
     columnas_numericas = df.select_dtypes(include=['number']).columns.tolist()
     columnas_categoricas = df.select_dtypes(include=['object']).columns.tolist()
     st.write(f"Columnas numéricas detectadas: {', '.join(columnas_numericas)}")
 
-    # 🛀 Agrupación de datos
+    # 📊 Análisis Estadístico de Columnas Numéricas
+    st.subheader("📊 Análisis Estadístico:")
+
+    if columnas_numericas:
+        columna_analisis = st.selectbox("Selecciona una columna numérica para analizar", columnas_numericas)
+        datos_columna = df[columna_analisis].dropna()
+
+        st.write(f"🔹 Media: {datos_columna.mean():.2f}")
+        st.write(f"🔹 Mediana: {datos_columna.median():.2f}")
+        st.write(f"🔹 Moda: {datos_columna.mode().values[0]:.2f}")
+        st.write(f"🔹 Desviación estándar: {datos_columna.std():.2f}")
+        st.write(f"🔹 Mínimo: {datos_columna.min():.2f}")
+        st.write(f"🔹 Máximo: {datos_columna.max():.2f}")
+
+        if datos_columna.nunique() < 20:
+            st.write("🔹 Tabla de Frecuencias:")
+            freq_table = datos_columna.value_counts().reset_index()
+            freq_table.columns = [columna_analisis, "Frecuencia"]
+            freq_table["Frecuencia Relativa (%)"] = (freq_table["Frecuencia"] / len(datos_columna) * 100).round(2)
+            freq_table["Frecuencia Acumulada"] = freq_table["Frecuencia"].cumsum()
+            st.dataframe(freq_table)
+
+        st.markdown("**📊 Visualización adicional:**")
+        if st.checkbox("📉 Mostrar Histograma"):
+            plt.figure(figsize=(8, 5))
+            plt.hist(datos_columna, bins=10, color='skyblue', edgecolor='black')
+            plt.title(f"Histograma de {columna_analisis}")
+            plt.xlabel(columna_analisis)
+            plt.ylabel("Frecuencia")
+            st.pyplot(plt)
+
+        if st.checkbox("📆 Mostrar Boxplot"):
+            plt.figure(figsize=(6, 4))
+            plt.boxplot(datos_columna, vert=False)
+            plt.title(f"Boxplot de {columna_analisis}")
+            plt.xlabel(columna_analisis)
+            st.pyplot(plt)
+
+    # 🚰 Agrupación de datos
     if columnas_categoricas:
-        st.subheader("🛀 Agrupar Datos:")
+        st.subheader("🚰 Agrupar Datos:")
         seleccion_categorias = st.multiselect("Selecciona las columnas para agrupar", columnas_categoricas)
 
         operacion = st.radio(
@@ -65,12 +103,16 @@ if archivo is not None:
                 mostrar_valores_barras = st.checkbox("Mostrar valores reales en Barras")
                 mostrar_porcentaje_barras = st.checkbox("Mostrar porcentaje en Barras")
 
+                # Ordenar categorías y valores de mayor a menor
+                ordenado = sorted(zip(categorias, valores), key=lambda x: x[1], reverse=True)
+                categorias_ordenadas, valores_ordenados = zip(*ordenado)
+
                 plt.figure(figsize=(12,7))
                 colores = plt.cm.tab20.colors
-                total_valores = sum(valores)
-                plt.bar(categorias, valores, color=colores[:len(valores)])
+                total_valores = sum(valores_ordenados)
+                plt.bar(categorias_ordenadas, valores_ordenados, color=colores[:len(valores_ordenados)])
 
-                for i, valor in enumerate(valores):
+                for i, valor in enumerate(valores_ordenados):
                     etiqueta = ""
                     if mostrar_valores_barras:
                         etiqueta += f"{valor:.0f}"
@@ -111,6 +153,7 @@ if archivo is not None:
                 plt.axis('equal')
                 plt.title("Agrupación de Datos - Torta")
                 st.pyplot(plt)
+
 
 
 
